@@ -51,6 +51,13 @@ git tag VERSION # e.g. v0.1.0
 git push origin VERSION
 ```
 
+The GitHub Actions workflow will automatically:
+
+1. Generate the release tarball
+2. Update the Homebrew formula with the new version and SHA256
+3. Commit and push the changes back to the main branch
+4. Create a GitHub Release
+
 ## License
 
 MIT
