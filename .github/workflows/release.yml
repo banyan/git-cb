@@ -8,53 +8,61 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
-
       - name: Get version from tag
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
-      - name: Update version in script
-        run: |
-          sed -i "s/^VERSION=\".*\"/VERSION=\"${{ steps.get_version.outputs.VERSION }}\"/" git-cb
-
       - name: Create release directory
         run: |
           mkdir -p release/git-cb-${{ steps.get_version.outputs.VERSION }}
           cp git-cb LICENSE README.md release/git-cb-${{ steps.get_version.outputs.VERSION }}/
-
       - name: Create tarball
         run: |
           cd release
           tar -czf git-cb-${{ steps.get_version.outputs.VERSION }}.tar.gz git-cb-${{ steps.get_version.outputs.VERSION }}
           cd ..
-
       - name: Calculate SHA256
         id: sha256
         run: |
           SHA256=$(shasum -a 256 "release/git-cb-${{ steps.get_version.outputs.VERSION }}.tar.gz" | cut -d ' ' -f 1)
           echo "SHA256=$SHA256" >> $GITHUB_OUTPUT
-
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/git-cb-${{ steps.get_version.outputs.VERSION }}.tar.gz
+          name: Release v${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Update version in script
+        run: |
+          sed -i "s/^VERSION=\".*\"/VERSION=\"${{ steps.get_version.outputs.VERSION }}\"/" git-cb
       - name: Update formula
         run: |
           sed -i "s|url \".*\"|url \"https://github.com/${{ github.repository }}/archive/v${{ steps.get_version.outputs.VERSION }}.tar.gz\"|" Formula/git-cb.rb
           sed -i "s/sha256 \".*\"/sha256 \"${{ steps.sha256.outputs.SHA256 }}\"/" Formula/git-cb.rb
-
       - name: Commit formula changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add Formula/git-cb.rb git-cb
           git commit -m "Update formula for v${{ steps.get_version.outputs.VERSION }}"
-          git push
-
+          git push origin main
       - name: Create GitHub Release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: release/git-cb-${{ steps.get_version.outputs.VERSION }}.tar.gz
           name: Release v${{ steps.get_version.outputs.VERSION }}
