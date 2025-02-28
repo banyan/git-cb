@@ -1,0 +1,34 @@
+#!/bin/bash
+set -euo pipefail
+
+VERSION="0.1.0"
+
+# Display version if requested
+if [ "${1-}" = "--version" ]; then
+  echo "git-cb version $VERSION"
+  exit 0
+fi
+
+# Get commit message from the provided Git SHA
+# If no SHA is provided, use the latest commit
+if [ -n "${1-}" ]; then
+  commit_msg=$(git log --pretty="%s" -1 "$1")
+else
+  commit_msg=$(git log --pretty="%s" -1)
+fi
+
+# Create branch name:
+# 1. Remove leading/trailing whitespace
+# 2. Replace non-alphanumeric characters with hyphens
+# 3. Replace consecutive hyphens with a single hyphen
+# 4. Remove leading and trailing hyphens
+# 5. Convert to lowercase
+branch_name=$(echo "$commit_msg" | \
+  tr -s ' ' | \
+  sed -e 's/[^a-zA-Z0-9]/-/g' | \
+  sed -e 's/-\{2,\}/-/g' | \
+  sed -e 's/^-//' -e 's/-$//' | \
+  tr '[:upper:]' '[:lower:]')
+
+# Create and switch to the new branch
+git checkout -b "$branch_name"

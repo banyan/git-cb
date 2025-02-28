@@ -1,0 +1,36 @@
+name: Test
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Test git-cb
+        run: |
+          # Create a test repository
+          mkdir -p test-repo
+          cd test-repo
+          git init
+          touch a.txt
+          git add a.txt
+          git commit -m "Handle A feature"
+
+          # Test without arguments
+          ../git-cb
+          branch=$(git branch --show-current)
+          if [ "$branch" != "handle-a-feature" ]; then
+            echo "Branch name does not match expected value: $branch"
+            exit 1
+          fi
+
+          echo "All tests passed!"
