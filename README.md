@@ -13,7 +13,7 @@ brew install git-cb
 
 ### Manual Installation
 
-Or manually copy the script to a directory in your PATH:
+manually copy the script to a directory in your PATH:
 
 ```bash
 # Copy to a directory in your PATH

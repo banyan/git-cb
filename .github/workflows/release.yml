@@ -33,20 +33,6 @@ jobs:
         run: |
           SHA256=$(shasum -a 256 "release/git-cb-${{ steps.get_version.outputs.VERSION }}.tar.gz" | cut -d ' ' -f 1)
           echo "SHA256=$SHA256" >> $GITHUB_OUTPUT
-      - name: Create GitHub Release
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: release/git-cb-${{ steps.get_version.outputs.VERSION }}.tar.gz
-          name: Release v${{ steps.get_version.outputs.VERSION }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout main branch
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Update version in script
         run: |
           sed -i "s/^VERSION=\".*\"/VERSION=\"${{ steps.get_version.outputs.VERSION }}\"/" git-cb
