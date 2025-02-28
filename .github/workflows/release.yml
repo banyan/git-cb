@@ -36,17 +36,6 @@ jobs:
       - name: Update version in script
         run: |
           sed -i "s/^VERSION=\".*\"/VERSION=\"${{ steps.get_version.outputs.VERSION }}\"/" git-cb
-      - name: Update formula
-        run: |
-          sed -i "s|url \".*\"|url \"https://github.com/${{ github.repository }}/archive/v${{ steps.get_version.outputs.VERSION }}.tar.gz\"|" Formula/git-cb.rb
-          sed -i "s/sha256 \".*\"/sha256 \"${{ steps.sha256.outputs.SHA256 }}\"/" Formula/git-cb.rb
-      - name: Commit formula changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add Formula/git-cb.rb git-cb
-          git commit -m "Update formula for v${{ steps.get_version.outputs.VERSION }}"
-          git push origin main
       - name: Create GitHub Release
         id: create_release
         uses: softprops/action-gh-release@v2
