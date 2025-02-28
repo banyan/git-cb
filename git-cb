@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-VERSION="0.1.0"
+VERSION="0.1.2"
 
 # Display version if requested
 if [ "${1-}" = "--version" ]; then
